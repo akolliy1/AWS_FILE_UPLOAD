@@ -1,0 +1,97 @@
+# Welcome to serverless. Read the docs
+# https://serverless.com/framework/docs/
+
+# Serverless.yml is the configuration the CLI
+# uses to deploy your code to your provider of choice
+
+
+
+#serverles.yml
+service: file-uploads
+custom:
+    bucket: file-upload-lambda-services-tests
+provider:
+    name: aws
+    runtime: nodejs12.x
+    region: eu-west-1
+    stackName: fileUploaderHome
+    apiGateway:
+        binaryMediaTypes:
+            - '*/*'
+    iamRoleStatements:
+        - Effect: "Allow"
+          Action:
+            - "s3:PutObject"
+            - "s3:GetObject"
+          Resource:
+            - "arn:aws:s3:::${self:custom.bucket}/*"
+functions:
+    UploadFileHome:
+        handler: fileUploaderHome.handler
+        events:
+            - http:
+                path: upload
+                method: post
+                cors: true
+        environment:
+          Bucket: ${self:custom.bucket}
+resources:
+    Resources:
+        StorageBucket:
+            Type: "AWS::S3::Bucket"
+            Properties:
+                BucketName: ${self:custom.bucket}
+
+
+
+
+
+# The `service` block is the name of the service
+# service: file-upload
+
+# frameworkVersion: '2'
+
+# custom:
+#   bucket: file-upload-lambda-services
+# # The `provider` block defines where your service will be deployed
+# provider:
+#   name: aws
+#   runtime: nodejs12.x
+#   region: eu-west-1
+#   stackName: imageUploader
+#   iamRoleStatements:
+#     - Effect: "Allow"
+#       Action:
+#         - "s3:PutObject" 
+#       Resource: 
+#         - "arn:aws:s3:::${self:custom.bucket}/*" 
+
+# # The `functions` block defines what code to deploy
+# functions:
+#   UploadImage:
+#     handler: uploadImage.handler
+#     # The `events` block defines how to trigger the uploadImage.handler code
+#     events:
+#       - http:
+#           path: upload
+#           method: post
+#           cors: true
+#     environment:
+#       Bucket: ${self:custom.bucket} 
+# resources:
+#   Resources:
+#     StorageBucket:
+#       Type: "AWS::S3::Bucket"
+#       Properties:
+#         BucketName: ${self:custom.bucket}
+
+# The `functions` block defines what code to deploy
+# functions:
+#   helloWorld:
+#     handler: handler.helloWorld
+#     # The `events` block defines how to trigger the handler.helloWorld code
+#     events:
+#       - http:
+#           path: hello-world
+#           method: get
+#           cors: true
