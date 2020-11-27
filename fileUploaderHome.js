@@ -28,6 +28,7 @@ module.exports.handler = async event => {
         const thumbnailKey = `${uid}_thumbnail_${fileName}`
         console.log('originalKey', originalKey)
         const isImageType = MIME_TYPES.includes(file.contentType);
+        const fileType = isImageType ? 'imageUrl' : 'fileUrl';
 
         const fileResizedBuffer = isImageType ? await resize( file.content, file.contentType, 460) : ''
         /* const [originalFile, thumbnailFile] = */ await Promise.all([
@@ -37,15 +38,19 @@ module.exports.handler = async event => {
 
         // const signedOriginalUrl = s3.getSignedUrl("getObject", { Bucket: originalFile.Bucket, Key: originalKey, Expires: 60000 })
         // const signedThumbnailUrl = s3.getSignedUrl("getObject", { Bucket: thumbnailFile.Bucket, Key: thumbnailKey, Expires: 60000 })
-        const imageUrl = getUrlFromBucket(originalKey)
+        const originalUrl = getUrlFromBucket(originalKey)
         const thumbnailUrl = isImageType ? getUrlFromBucket(thumbnailKey) : ''
 
         return {
             statusCode: 200,
+            headers: {
+              "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
+              "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS 
+            },
             body: JSON.stringify({
                 id: uid,
                 mimeType: file.contentType,
-                imageUrl,
+                [fileType]: originalUrl,
                 thumbnailUrl
                 // originalKey: originalFile.key,
                 // thumbnailKey: thumbnailFile.key,
